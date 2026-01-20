@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Privacy Dashboard Prototype | TU Wien MP2</title>
+    <style>
+        :root {
+            /* TU Wien angehauchtes Cyber-Thema */
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --text-main: #f8fafc;
+            --text-sub: #94a3b8;
+            --primary: #006699;
+            /* Ähnlich TU Blau */
+            --danger: #ef4444;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --link: #38bdf8;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 40px 20px;
+            line-height: 1.5;
+        }
+
+        /* --- Header --- */
+        header {
+            max-width: 1200px;
+            margin: 0 auto 50px auto;
+            border-bottom: 1px solid #334155;
+            padding-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 1.5rem;
+            font-weight: 600;
+            letter-spacing: -0.5px;
+        }
+
+        .subtitle {
+            color: var(--text-sub);
+            font-size: 0.9rem;
+            margin-top: 5px;
+        }
+
+        /* --- Controls --- */
+        .controls {
+            display: flex;
+            gap: 10px;
+        }
+
+        button {
+            background: var(--card-bg);
+            border: 1px solid #334155;
+            color: var(--text-main);
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        button:hover {
+            border-color: var(--text-sub);
+        }
+
+        button.active-danger {
+            background: rgba(239, 68, 68, 0.1);
+            border-color: var(--danger);
+            color: var(--danger);
+        }
+
+        button.active-policy {
+            background: rgba(59, 130, 246, 0.1);
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        /* --- Grid Layout --- */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 24px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* --- Card Design --- */
+        .card {
+            background: var(--card-bg);
+            border: 1px solid #334155;
+            border-radius: 12px;
+            padding: 24px;
+            position: relative;
+            transition: opacity 0.3s;
+        }
+
+        .card-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 20px;
+        }
+
+        .device-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .device-type {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            color: var(--text-sub);
+            letter-spacing: 1px;
+        }
+
+        .device-name {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-top: 4px;
+        }
+
+        /* Toggle Switch Design */
+        .toggle {
+            width: 44px;
+            height: 24px;
+            background: #334155;
+            border-radius: 20px;
+            position: relative;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .toggle::after {
+            content: '';
+            position: absolute;
+            width: 18px;
+            height: 18px;
+            background: white;
+            border-radius: 50%;
+            top: 3px;
+            left: 3px;
+            transition: 0.3s;
+        }
+
+        .toggle.on {
+            background: var(--success);
+        }
+
+        .toggle.on::after {
+            transform: translateX(20px);
+        }
+
+        /* --- POLICY LAYER (Hidden by default) --- */
+        .policy-layer {
+            display: none;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #334155;
+            font-size: 0.85rem;
+            animation: slideDown 0.3s ease-out;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .meta-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            align-items: center;
+        }
+
+        .meta-label {
+            color: var(--text-sub);
+        }
+
+        .meta-value {
+            font-family: 'Courier New', monospace;
+            font-weight: 600;
+            text-align: right;
+        }
+
+        /* Source Link in Card */
+        .source-ref {
+            font-size: 0.7rem;
+            color: var(--text-sub);
+            margin-top: 10px;
+            text-align: right;
+            display: block;
+            text-decoration: none;
+            border-bottom: 1px dotted var(--text-sub);
+        }
+
+        .source-ref:hover {
+            color: var(--link);
+            border-color: var(--link);
+        }
+
+        /* Status Dots & Colors */
+        .status-dot {
+            height: 8px;
+            width: 8px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 6px;
+        }
+
+        .bg-red {
+            background-color: var(--danger);
+        }
+
+        .bg-green {
+            background-color: var(--success);
+        }
+
+        .bg-orange {
+            background-color: var(--warning);
+        }
+
+        .text-red {
+            color: var(--danger);
+        }
+
+        .text-green {
+            color: var(--success);
+        }
+
+        .text-orange {
+            color: var(--warning);
+        }
+
+        /* --- Sources Section Footer --- */
+        .sources-section {
+            max-width: 1000px;
+            margin: 60px auto 0 auto;
+            border-top: 1px solid #334155;
+            padding-top: 30px;
+            font-size: 0.9rem;
+            color: var(--text-sub);
+        }
+
+        .sources-section h3 {
+            color: var(--text-main);
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+
+        .sources-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .sources-list li {
+            margin-bottom: 15px;
+        }
+
+        .sources-list a {
+            color: var(--link);
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .sources-list a:hover {
+            text-decoration: underline;
+        }
+
+        /* --- Logic States --- */
+        body.policy-active .policy-layer {
+            display: block;
+        }
+
+        /* Internet Offline Logic */
+        body.internet-offline .card[data-dependency="cloud"] {
+            opacity: 0.4;
+            pointer-events: none;
+            filter: grayscale(1);
+        }
+
+        body.internet-offline .card[data-dependency="cloud"]::before {
+            content: "Keine Serververbindung";
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: #000;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            z-index: 10;
+            white-space: nowrap;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <div>
+            <h1>Mein Heim-Dashboard</h1>
+            <div class="subtitle">Miniprojekt 2: Transparenz für Smart-Home-Geräte</div>
+        </div>
+        <div class="controls">
+            <button id="btn-net" onclick="toggleInternet()">Netzwerk Status: Online</button>
+            <button id="btn-pol" onclick="togglePolicy()">Policy Modus: Aus</button>
+        </div>
+    </header>
+
+    <div class="grid">
+
+        <!-- CARD 1: Billig Kamera -->
+        <div class="card" data-dependency="cloud">
+            <div class="card-top">
+                <div class="device-info">
+                    <div class="device-type">Security</div>
+                    <div class="device-name">Eingangskamera</div>
+                </div>
+                <div class="toggle on"></div>
+            </div>
+
+            <div class="policy-layer">
+                <div class="meta-row">
+                    <span class="meta-label">Verbindung</span>
+                    <span class="meta-value text-red"><span class="status-dot bg-red"></span>Cloud P2P</span>
+                </div>
+                <div class="meta-row">
+                    <span class="meta-label">Risiko</span>
+                    <span class="meta-value">Daten unverschlüsselt</span>
+                </div>
+                <div class="meta-row">
+                    <span class="meta-label">Datenschutz</span>
+                    <span class="meta-value">Keine DSGVO (CN)</span>
+                </div>
+                <a href="#source-1" class="source-ref">Siehe: Der Standard / Heise</a>
+            </div>
+        </div>
+
+        <!-- CARD 2: Smart Toy (Cayla) -->
+        <div class="card" data-dependency="cloud">
+            <div class="card-top">
+                <div class="device-info">
+                    <div class="device-type">Spielzeug</div>
+                    <div class="device-name">Smarte Puppe</div>
+                </div>
+                <div class="toggle on"></div>
+            </div>
+
+            <div class="policy-layer">
+                <div class="meta-row">
+                    <span class="meta-label">Verbindung</span>
+                    <span class="meta-value text-red"><span class="status-dot bg-red"></span>Bluetooth Offen</span>
+                </div>
+                <div class="meta-row">
+                    <span class="meta-label">Mikrofon</span>
+                    <span class="meta-value">Always-On</span>
+                </div>
+                <div class="meta-row">
+                    <span class="meta-label">Rechtslage</span>
+                    <span class="meta-value text-red">Verbotene Sendeanlage</span>
+                </div>
+                <a href="#source-2" class="source-ref">Siehe: Der Standard / RTR</a>
+            </div>
+        </div>
+
+        <!-- CARD 3: Smart TV Tracking -->
+        <div class="card" data-dependency="cloud">
+            <div class="card-top">
+                <div class="device-info">
+                    <div class="device-type">Entertainment</div>
+                    <div class="device-name">4K Smart TV</div>
+                </div>
+                <div style="font-size: 0.8rem; background: #334155; padding: 4px 8px; border-radius: 4px;">Netflix App
+                </div>
+            </div>
+
+            <div class="policy-layer">
+                <div class="meta-row">
+                    <span class="meta-label">Tracking</span>
+                    <span class="meta-value text-orange"><span class="status-dot bg-orange"></span>ACR
+                        (Bildschirmanalyse)</span>
+                </div>
+                <div class="meta-row">
+                    <span class="meta-label">Datenfluss</span>
+                    <span class="meta-value">Nutzungsprofile -> Ad-Tech</span>
+                </div>
+                <div class="meta-row">
+                    <span class="meta-label">Warnung</span>
+                    <span class="meta-value">Arbeiterkammer</span>
+                </div>
+                <a href="#source-3" class="source-ref">Siehe: AK OÖ / Watchlist</a>
+            </div>
+        </div>
+
+        <!-- CARD 4: Home Assistant (The Good One) -->
+        <div class="card" data-dependency="local">
+            <div class="card-top">
+                <div class="device-info">
+                    <div class="device-type">Infrastruktur</div>
+                    <div class="device-name">Home Assistant</div>
+                </div>
+                <div style="font-weight: bold; font-size: 0.9rem; color: var(--success);">RUNNING</div>
+            </div>
+
+            <div class="policy-layer">
+                <div class="meta-row">
+                    <span class="meta-label">Verbindung</span>
+                    <span class="meta-value text-green"><span class="status-dot bg-green"></span>Lokal</span>
+                </div>
+                <div class="meta-row">
+                    <span class="meta-label">Cloud</span>
+                    <span class="meta-value">Deaktiviert</span>
+                </div>
+                <div class="meta-row">
+                    <span class="meta-label">Kontrolle</span>
+                    <span class="meta-value">100% Nutzer</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- CARD 5: Thermostat (Local) -->
+        <div class="card" data-dependency="local">
+            <div class="card-top">
+                <div class="device-info">
+                    <div class="device-type">Klima</div>
+                    <div class="device-name">Thermostat Bad</div>
+                </div>
+                <div style="font-weight: bold; font-size: 1.2rem;">22.5°C</div>
+            </div>
+
+            <div class="policy-layer">
+                <div class="meta-row">
+                    <span class="meta-label">Protokoll</span>
+                    <span class="meta-value text-green"><span class="status-dot bg-green"></span>MQTT (Lokal)</span>
+                </div>
+                <div class="meta-row">
+                    <span class="meta-label">Tracker</span>
+                    <span class="meta-value">0 erkannt</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- CARD 6: Smart Plug (Grauzone) -->
+        <div class="card" data-dependency="cloud">
+            <div class="card-top">
+                <div class="device-info">
+                    <div class="device-type">Power</div>
+                    <div class="device-name">WLAN Steckdose</div>
+                </div>
+                <div class="toggle on"></div>
+            </div>
+
+            <div class="policy-layer">
+                <div class="meta-row">
+                    <span class="meta-label">Firmware</span>
+                    <span class="meta-value text-orange"><span class="status-dot bg-orange"></span>Veraltet</span>
+                </div>
+                <div class="meta-row">
+                    <span class="meta-label">Passwort</span>
+                    <span class="meta-value text-red">Hardcoded</span>
+                </div>
+                <div class="meta-row">
+                    <span class="meta-label">Cloud</span>
+                    <span class="meta-value">AWS (US-East)</span>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- SOURCES SECTION (AUSTRIAN CONTEXT) -->
+    <div class="sources-section">
+        <h3>Quellen & Recherche (Österreich/DACH)</h3>
+        <p style="margin-bottom: 20px;">Das Design basiert auf realen Sicherheitsanalysen und Berichten lokaler
+            Institutionen.</p>
+        <ul class="sources-list">
+            <li id="source-1">
+                <strong>[1] Überwachungskameras & Datenschutz:</strong>
+                Der VKI testet Überwachungskameras und diskutiert u. a. datenschutzrelevante Aspekte bei günstigen Cloud-basierten
+                Modellen.
+                <br><a href="https://konsument.at/ueberwachungskameras-fuer-aussen-30-modelle-im-test/69082" target="_blank">📄
+                    Überwachungskameras im Test – Konsument.at (VKI)</a>
+            </li>
+            <li id="source-2">
+                <strong>[2] „Cayla“ als verbotene Sendeanlage:</strong>
+                Die Puppe „My Friend Cayla“ wurde von der Bundesnetzagentur als illegale Sendeanlage eingestuft, weil sie
+                Bluetooth-Mikrofon und Netzwerkzugriff besitzt.
+                <br><a href="https://help.orf.at/v3/stories/2826341/" target="_blank">📄 help.ORF.at: Deutschland verbietet
+                    sprechende Puppe „Cayla“</a>
+            </li>
+            <li id="source-3">
+                <strong>[3] Smart TV & Tracking:</strong>
+                Untersuchungen zeigen, dass Smart-TVs datenintensive Tracking-Technologien einsetzen, z. B. Automated Content
+                Recognition (ACR), und dabei Nutzerprofile erstellen.
+                <br><a
+                    href="https://www.derstandard.at/story/2000118470494/smart-tvs-fast-alle-fernseher-spionieren-ihre-nutzer-aus"
+                    target="_blank">📄 Der Standard: Smart TVs spionieren Nutzer aus</a>
+            </li>
+        </ul>
+    </div>
+
+    <script>
+        let isPolicyActive = false;
+        let isInternetOnline = true;
+
+        function togglePolicy() {
+            isPolicyActive = !isPolicyActive;
+            const btn = document.getElementById('btn-pol');
+
+            if (isPolicyActive) {
+                document.body.classList.add('policy-active');
+                btn.innerText = "Policy Modus: An";
+                btn.classList.add('active-policy');
+            } else {
+                document.body.classList.remove('policy-active');
+                btn.innerText = "Policy Modus: Aus";
+                btn.classList.remove('active-policy');
+            }
+        }
+
+        function toggleInternet() {
+            isInternetOnline = !isInternetOnline;
+            const btn = document.getElementById('btn-net');
+
+            if (!isInternetOnline) {
+                document.body.classList.add('internet-offline');
+                btn.innerText = "Netzwerk Status: Offline";
+                btn.classList.add('active-danger');
+            } else {
+                document.body.classList.remove('internet-offline');
+                btn.innerText = "Netzwerk Status: Online";
+                btn.classList.remove('active-danger');
+            }
+        }
+    </script>
+</body>
+
+</html>
